@@ -12,6 +12,7 @@ import {
 import { GeographicLines } from './GeographicLines';
 import { HeatmapOverlay } from './HeatmapOverlay';
 import { SubsolarMarker } from './SubsolarMarker';
+import { SolarBeam } from './SolarBeam';
 
 export const Earth: React.FC = () => {
   const orbitGroupRef = useRef<Group>(null);
@@ -53,6 +54,9 @@ export const Earth: React.FC = () => {
   return (
     <group ref={orbitGroupRef} position={[x, 0, z]}>
       
+      {/* Volumetric Solar Beam */}
+      <SolarBeam sunPosition={localSunPos} />
+
       {/* Tilt Container: Fixed 23.5 degrees tilt */}
       <group rotation={[0, 0, (EARTH_AXIAL_TILT_DEG * Math.PI) / 180]}>
         
@@ -80,20 +84,10 @@ export const Earth: React.FC = () => {
           </mesh>
         </mesh>
 
-        {/* Static Overlays (Fixed to Geography/Tilt, not Spinning) */}
-        
-        {/* Geo Lines - We keep these fixed to the TILT axis. 
-            Note: In reality, lines spin with Earth. But for education, keeping them static
-            helps visualize the "Zones" better unless we are zoomed in very close.
-            However, user request implied they are geographic lines.
-            If they don't spin, they are abstract zones. 
-            If they spin, they are texture.
-            Given the subsolar marker logic requires checking against lines, keeping them static (abstract zones)
-            is usually better for the "Angle of Incidence" lesson.
-        */}
+        {/* Static Overlays */}
         {showLines && <GeographicLines />}
         
-        {/* Heatmap Overlay (Static relative to sun direction, but inside tilt group) */}
+        {/* Heatmap Overlay */}
         {showHeatmap && (
            <HeatmapOverlay sunPosition={localSunPos} />
         )}
@@ -103,7 +97,7 @@ export const Earth: React.FC = () => {
 
       </group>
       
-      {/* Axis Line Visual (Vertical relative to Tilt Group) */}
+      {/* Axis Line Visual */}
       <group rotation={[0, 0, (EARTH_AXIAL_TILT_DEG * Math.PI) / 180]}>
          <Line 
             points={[new Vector3(0, 3, 0), new Vector3(0, -3, 0)]}

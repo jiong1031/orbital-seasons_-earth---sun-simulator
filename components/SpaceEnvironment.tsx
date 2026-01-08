@@ -1,11 +1,16 @@
-import React, { useRef, useMemo, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture, Sparkles } from '@react-three/drei';
 import { BackSide, Vector3, Group } from 'three';
 import { TEXTURES } from '../constants';
 
 // Meteor Component
-const ShootingStar: React.FC = () => {
+interface MeteorProps {
+  color?: string;
+  speedMultiplier?: number;
+}
+
+const ShootingStar: React.FC<MeteorProps> = ({ color = "white", speedMultiplier = 1 }) => {
   const groupRef = useRef<Group>(null);
   const [active, setActive] = useState(false);
   
@@ -14,7 +19,7 @@ const ShootingStar: React.FC = () => {
   const endPos = useRef(new Vector3());
   const speed = useRef(0);
   const progress = useRef(0);
-  const delay = useRef(Math.random() * 5 + 2); // Initial delay
+  const delay = useRef(Math.random() * 2);
 
   const resetMeteor = () => {
     // Pick random spot on a large sphere
@@ -25,14 +30,15 @@ const ShootingStar: React.FC = () => {
     startPos.current.setFromSphericalCoords(r, theta, phi);
     
     // End position: Move along a tangent or random direction nearby
-    // Simple way: pick another point 40-60 units away
     const offsetPhi = phi + (Math.random() - 0.5) * 1.5;
     const offsetTheta = theta + (Math.random() - 0.5) * 1.5;
     endPos.current.setFromSphericalCoords(r, offsetTheta, offsetPhi);
     
-    speed.current = Math.random() * 0.5 + 0.3;
+    speed.current = (Math.random() * 0.5 + 0.8) * speedMultiplier; // Faster speed
     progress.current = 0;
-    delay.current = Math.random() * 10 + 5; // Wait 5-15 seconds before showing again
+    
+    // VERY ACTIVE: Spawn every 0.5 to 2.5 seconds roughly
+    delay.current = Math.random() * 2 + 0.5; 
     setActive(false);
   };
 
@@ -56,12 +62,11 @@ const ShootingStar: React.FC = () => {
     } else {
       if (groupRef.current) {
         groupRef.current.position.lerpVectors(startPos.current, endPos.current, progress.current);
-        
-        // Face camera for visibility? or just trail?
-        // Simple scaling to fade in/out
-        const fade = Math.sin(progress.current * Math.PI); // 0 -> 1 -> 0
-        groupRef.current.scale.setScalar(fade);
         groupRef.current.lookAt(endPos.current);
+        
+        // Trail effect scaling
+        const fade = Math.sin(progress.current * Math.PI); 
+        groupRef.current.scale.setScalar(fade);
       }
     }
   });
@@ -71,9 +76,8 @@ const ShootingStar: React.FC = () => {
   return (
     <group ref={groupRef}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        {/* Long thin trail */}
-        <cylinderGeometry args={[0.05, 0.4, 8, 4]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.8} />
+        <cylinderGeometry args={[0.05, 0.6, 12, 4]} />
+        <meshBasicMaterial color={color} transparent opacity={0.9} />
       </mesh>
     </group>
   );
@@ -90,33 +94,35 @@ export const SpaceEnvironment: React.FC = () => {
         <meshBasicMaterial 
             map={galaxyMap} 
             side={BackSide} 
-            color="#888888" // Tone it down slightly so sun pops
+            color="#666666" 
         />
       </mesh>
 
-      {/* 2. Twinkling Stars Layer - Closer and Brighter */}
+      {/* 2. Dense Star Field - High Count and Speed */}
       <Sparkles 
-        count={3000} 
-        scale={350} 
-        size={4} 
-        speed={0.4} 
-        opacity={0.8} 
+        count={6000} 
+        scale={380} 
+        size={3} 
+        speed={1.5} 
+        opacity={0.9} 
         color="#ffffff"
       />
       
-      {/* 3. Subtle colored stars for variety */}
+      {/* 3. Colorful Background Stars */}
       <Sparkles 
-        count={1000} 
-        scale={300} 
-        size={6} 
-        speed={0.2} 
-        opacity={0.5} 
+        count={2500} 
+        scale={350} 
+        size={5} 
+        speed={1.0} 
+        opacity={0.7} 
         color="#aabbff"
       />
-
-      {/* 4. Meteors */}
-      <ShootingStar />
-      <ShootingStar />
+      
+      {/* 4. Multiple Meteors for Hyper-Active background */}
+      <ShootingStar color="#aaddff" speedMultiplier={1.2} />
+      <ShootingStar color="#ffddaa" speedMultiplier={0.9} />
+      <ShootingStar color="#ffffff" speedMultiplier={1.5} />
+      <ShootingStar color="#ccffcc" speedMultiplier={1.1} />
     </group>
   );
 };

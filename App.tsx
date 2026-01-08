@@ -98,7 +98,8 @@ const Loader = () => (
 
 const App: React.FC = () => {
   return (
-    <div className="w-full h-full relative bg-black">
+    // Added touch-action: none and overscroll-behavior: none for iPad optimization
+    <div className="w-full h-full relative bg-black touch-none overscroll-none select-none">
       
       <UI />
 
@@ -119,13 +120,17 @@ const App: React.FC = () => {
           <Sun />
           <Earth />
           
-          {/* Controls & Helpers */}
+          {/* Controls & Helpers - Damping enabled for smooth touch feel */}
           <OrbitControls 
              makeDefault
              enablePan={false} 
+             enableDamping={true}
+             dampingFactor={0.05}
              minDistance={5} 
              maxDistance={200}
              maxPolarAngle={Math.PI / 1.5} 
+             rotateSpeed={0.5}
+             zoomSpeed={0.5}
           />
           <SimulationLoop />
           <CameraController />
